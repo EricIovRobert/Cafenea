@@ -1,20 +1,33 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Clienți pentru data {{ date_id }}{% endblock %}
+{% block title %}Clienți pentru data {{ date_formatted }}{% endblock %}
 
 {% block body %}
 <div class="container mt-5">
-    <h1>Clienți pentru data {{ date_id }}</h1>
-    <a href="{{ path('data') }}" class="btn btn-secondary mb-3">Înapoi la lista datelor</a>
+    <h1 class="mb-4">Clienți pentru data {{ date_formatted }}</h1>
+        <a href="{{ path('data_add_client', { id: date_id }) }}" class="btn btn-primary">Adaugă Client</a>
+
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
             <thead class="table-dark">
                 <tr>
-                    <th>#</th>
+                    <th>Nr.</th>
                     <th>Nume Client</th>
                     <th>Citire Anterioară</th>
                     <th>Citire Actuală</th>
+                    <th>Diferență</th>
+                    <th>Probe</th>
                     <th>Preț</th>
+                    <th>Total</th>
+                    <th>Cafea Covim</th>
+                    <th>Cafea Lavazza</th>
+                    <th>Lapte</th>
+                    <th>Zahăr</th>
+                    <th>Ceai</th>
+                    <th>Solubil</th>
+                    <th>Pahare Plastic</th>
+                    <th>Pahare Carton</th>
+                    <th>Palete</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,11 +37,23 @@
                         <td>{{ client.nume }}</td>
                         <td>{{ client.citire_anterioara }}</td>
                         <td>{{ client.citire_actuala }}</td>
+                        <td>{{ client.citire_actuala - client.citire_anterioara }}</td>
+                        <td>{{ client.probe }}</td>
                         <td>{{ client.pret }}</td>
+                        <td>{{ ((client.citire_actuala - client.citire_anterioara) - client.probe) * client.pret }}</td>
+                        <td>{{ client.cafea_covim }}</td>
+                        <td>{{ client.cafea_lavazza }}</td>
+                        <td>{{ client.lapte }}</td>
+                        <td>{{ client.zahar }}</td>
+                        <td>{{ client.ceai }}</td>
+                        <td>{{ client.solubil }}</td>
+                        <td>{{ client.pahare_plastic }}</td>
+                        <td>{{ client.pahare_carton }}</td>
+                        <td>{{ client.palete }}</td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted">Nu există clienți pentru această dată</td>
+                        <td colspan="17" class="text-center text-muted">Nu există clienți pentru această dată.</td>
                     </tr>
                 {% endfor %}
             </tbody>

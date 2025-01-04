@@ -60,6 +60,9 @@ class Client
     #[ORM\OneToMany(targetEntity: ClientZiua::class, mappedBy: 'client')]
     private Collection $clientZiuas;
 
+    #[ORM\Column(length: 50)]
+    private ?string $Nume = null;
+
     public function __construct()
     {
         $this->clientZiuas = new ArrayCollection();
@@ -252,6 +255,18 @@ class Client
                 $clientZiua->setClient(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getNume(): ?string
+    {
+        return $this->Nume;
+    }
+
+    public function setNume(string $Nume): static
+    {
+        $this->Nume = $Nume;
 
         return $this;
     }
