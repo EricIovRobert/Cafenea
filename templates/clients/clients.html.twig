@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Clienți pentru data {{ date_id }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>Clienți pentru data {{ date_id }}</h1>
+    <a href="{{ path('data') }}" class="btn btn-secondary mb-3">Înapoi la lista datelor</a>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Nume Client</th>
+                    <th>Citire Anterioară</th>
+                    <th>Citire Actuală</th>
+                    <th>Preț</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ client.nume }}</td>
+                        <td>{{ client.citire_anterioara }}</td>
+                        <td>{{ client.citire_actuala }}</td>
+                        <td>{{ client.pret }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Nu există clienți pentru această dată</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

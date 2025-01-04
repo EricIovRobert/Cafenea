@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Adaugă Dată{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="mb-4">Adaugă o nouă dată</h1>
+
+    {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <div class="d-flex justify-content-between mt-3">
+            <button type="submit" class="btn btn-success">Adaugă</button>
+            <a href="{{ path('data') }}" class="btn btn-secondary">Înapoi la listă</a>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}
