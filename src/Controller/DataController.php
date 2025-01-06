@@ -13,51 +13,69 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 class DataController extends AbstractController
 {
     #[Route('/data', name: 'data')]
-    public function index(EntityManagerInterface $entityManager): Response
-    {
-    
-        $data = $entityManager->getRepository(Data::class)->findBy([], ['Ziua' => 'ASC']); 
-    
-        $zileTraduse = [
-            'Monday'    => 'Luni',
-            'Tuesday'   => 'Marți',
-            'Wednesday' => 'Miercuri',
-            'Thursday'  => 'Joi',
-            'Friday'    => 'Vineri',
-            'Saturday'  => 'Sâmbătă',
-            'Sunday'    => 'Duminică',
-        ];
-    
-        foreach ($data as $entry) {
-            if ($entry->getZiua()) {
-                $englishDay = $entry->getZiua()->format('l'); 
-                $translatedDay = $zileTraduse[$englishDay] ?? $englishDay; 
-                $entry->formattedDate = $translatedDay . ', ' . $entry->getZiua()->format('d.m.Y'); 
-            }
+public function index(Request $request, EntityManagerInterface $entityManager, \Knp\Component\Pager\PaginatorInterface $paginator): Response
+{
+    $dataQuery = $entityManager->getRepository(Data::class)->createQueryBuilder('d')
+        ->orderBy('d.Ziua', 'ASC')
+        ->getQuery();
+
+    // Pagina curentă și numărul de elemente pe pagină
+    $pagination = $paginator->paginate(
+        $dataQuery, // Query-ul de paginat
+        $request->query->getInt('page', 1), // Pagina curentă
+        30 // Numărul de elemente pe pagină
+    );
+
+    // Traducerea zilelor săptămânii
+    $zileTraduse = [
+        'Monday'    => 'Luni',
+        'Tuesday'   => 'Marți',
+        'Wednesday' => 'Miercuri',
+        'Thursday'  => 'Joi',
+        'Friday'    => 'Vineri',
+        'Saturday'  => 'Sâmbătă',
+        'Sunday'    => 'Duminică',
+    ];
+
+    foreach ($pagination as $entry) {
+        if ($entry->getZiua()) {
+            $englishDay = $entry->getZiua()->format('l'); 
+            $translatedDay = $zileTraduse[$englishDay] ?? $englishDay; 
+            $entry->formattedDate = $translatedDay . ', ' . $entry->getZiua()->format('d.m.Y'); 
         }
-    
-        return $this->render('data/data.html.twig', [
-            'data' => $data,
-        ]);
     }
+
+    return $this->render('data/data.html.twig', [
+        'pagination' => $pagination,
+    ]);
+}
+
     
 
-    #[Route('/data/add', name: 'data_add')]
-    public function add(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $data = new Data();
+#[Route('/data/add', name: 'data_add')]
+public function add(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $data = new Data();
 
-        $form = $this->createFormBuilder($data)
-            ->add('Ziua', DateType::class, [
-                'widget' => 'single_text',
-                'label' => 'Selectează o dată',
-                'attr' => ['class' => 'form-control']
-            ])
-            ->getForm();
+    $form = $this->createFormBuilder($data)
+        ->add('Ziua', DateType::class, [
+            'widget' => 'single_text',
+            'label' => 'Selectează o dată',
+            'attr' => ['class' => 'form-control']
+        ])
+        ->getForm();
 
-        $form->handleRequest($request);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Verificăm dacă data există deja în baza de date
+        $existingDate = $entityManager->getRepository(Data::class)
+            ->findOneBy(['Ziua' => $data->getZiua()]);
+
+        if ($existingDate) {
+            // Adăugăm un mesaj de eroare la formular
+            $this->addFlash('danger', 'Data selectată există deja! Vă rugăm să selectați o altă dată.');
+        } else {
             $entityManager->persist($data);
             $entityManager->flush();
 
@@ -65,11 +83,15 @@ class DataController extends AbstractController
 
             return $this->redirectToRoute('data'); 
         }
-
-        return $this->render('data/add.html.twig', [
-            'form' => $form->createView(),
-        ]);
     }
+
+    return $this->render('data/add.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
+
+
+
 
     #[Route('/data/{id}/clients', name: 'data_clients')]
     public function clientsForDate(int $id, EntityManagerInterface $entityManager): Response

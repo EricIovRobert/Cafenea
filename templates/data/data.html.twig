@@ -18,14 +18,14 @@
                 </tr>
             </thead>
             <tbody>
-                {% for entry in data %}
+                {% for entry in pagination %}
                     <tr>
-                        <td>{{ loop.index }}</td> <!-- Numărul de ordine -->
+                        <td>{{ loop.index }}</td>
                         <td>
                             <a href="{{ path('data_clients', { id: entry.id }) }}">
                                 {{ entry.formattedDate }}
                             </a>
-                        </td> <!-- Data formatată cu link -->
+                        </td>
                     </tr>
                 {% else %}
                     <tr>
@@ -34,6 +34,10 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <div class="d-flex justify-content-center">
+        {{ knp_pagination_render(pagination) }}
     </div>
 </div>
 {% endblock %}
