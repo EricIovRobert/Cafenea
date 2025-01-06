@@ -37,6 +37,12 @@ security:
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/data$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/data/add$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/data/\d+/clients$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/data/\d+/add-client$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/get-last-citire-actuala$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/data/\d+/clients/pdf$, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:
