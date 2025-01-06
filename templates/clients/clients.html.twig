@@ -4,11 +4,14 @@
 
 {% block body %}
 <div class="container mt-5">
-    <h1 class="mb-4">Clienți pentru data {{ date_formatted }}</h1>
-        <a href="{{ path('data_add_client', { id: date_id }) }}" class="btn btn-primary">Adaugă Client</a>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Clienți pentru data {{ date_formatted }}</h1>
+        <a href="{{ path('data_add_client', { id: date_id }) }}" class="btn btn-primary ">Adaugă Client</a>
+        <a href="{{ path('data_clients_pdf', { id: date_id }) }}" target="_blank" class="btn btn-secondary">Printează</a>
+    </div>
 
     <div class="table-responsive">
-        <table class="table table-bordered table-striped">
+        <table class="table table-bordered table-hover text-center">
             <thead class="table-dark">
                 <tr>
                     <th>Nr.</th>
@@ -55,11 +58,29 @@
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="17" class="text-center text-muted">Nu există clienți pentru această dată.</td>
+                        <td colspan="18" class="text-center text-muted">Nu există clienți pentru această dată.</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<style>
+    /* Ajustăm dimensiunea tabelului */
+    .table {
+        font-size: 14px; /* Diminuăm fontul pentru a încăpea mai bine */
+        white-space: nowrap; /* Evităm spargerea textului */
+    }
+
+    /* Aliniere și spațiere buton */
+    .btn-primary {
+        padding: 10px 20px;
+    }
+
+    /* Aliniere pe verticală a capetelor de tabel */
+    thead th {
+        vertical-align: middle;
+    }
+</style>
 {% endblock %}

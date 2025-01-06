@@ -279,6 +279,85 @@ public function getLastCitireActuala(Request $request, EntityManagerInterface $e
     ]);
 }
 
+#[Route('/data/{id}/clients/pdf', name: 'data_clients_pdf')]
+public function clientsToPdf(int $id, EntityManagerInterface $entityManager): Response
+{
+    // Găsim obiectul `Data` pentru ID-ul dat
+    $data = $entityManager->getRepository(Data::class)->find($id);
+
+    if (!$data) {
+        throw $this->createNotFoundException('Data nu a fost găsită!');
+    }
+
+    // Obținem toate relațiile `ClientZiua` pentru această dată
+    $relations = $data->getClientZiuas();
+
+    // Pregătim lista clienților
+    $clients = [];
+    foreach ($relations as $relation) {
+        $client = $relation->getClient();
+        if ($client) {
+            $clients[] = [
+                'nume' => $client->getNume(),
+                'citire_anterioara' => $client->getCitireAnterioara() ?? 0,
+                'citire_actuala' => $client->getCitireActuala() ?? 0,
+                'diferenta' => ($client->getCitireActuala() - $client->getCitireAnterioara()) ?? 0,
+                'probe' => $client->getProbe() ?? 0,
+                'pret' => $client->getPret() ?? 0,
+                'total' => ((($client->getCitireActuala() - $client->getCitireAnterioara()) - $client->getProbe()) * $client->getPret()) ?? 0,
+                'cafea_covim' => $client->getCafeaCovim() ?? 0,
+                'cafea_lavazza' => $client->getCafeaLavazza() ?? 0,
+                'zahar' => $client->getZahar() ?? 0,
+                'lapte' => $client->getLapte() ?? 0,
+                'ciocolata' => $client->getCiocolata() ?? 0,
+                'ceai' => $client->getCeai() ?? 0,
+                'solubil' => $client->getSolubil() ?? 0,
+                'pahare_plastic' => $client->getPaharePlastic() ?? 0,
+                'pahare_carton' => $client->getPahareCarton() ?? 0,
+                'palete' => $client->getPalete() ?? 0,
+            ];
+        }
+    }
+    // Traducerea zilelor săptămânii
+        $zileTraduse = [
+            'Monday'    => 'Luni',
+            'Tuesday'   => 'Marti',
+            'Wednesday' => 'Miercuri',
+            'Thursday'  => 'Joi',
+            'Friday'    => 'Vineri',
+            'Saturday'  => 'Sambata',
+            'Sunday'    => 'Duminica',
+        ];
+
+        $englishDay = $data->getZiua()->format('l'); // Ex: "Monday"
+        $translatedDay = $zileTraduse[$englishDay] ?? $englishDay;
+
+        // Formatează data cu ziua săptămânii
+        $dateFormatted = $data->getZiua()->format('d.m.Y') . ' (' . $translatedDay . ')';
+
+
+    // Creează conținutul HTML al PDF-ului
+    $html = $this->renderView('clients/clients_pdf.html.twig', [
+        'clients' => $clients,
+        'date_formatted' => $dateFormatted,
+    ]);
+    
+
+    // Configurează DomPDF
+    $dompdf = new \Dompdf\Dompdf();
+    $dompdf->setPaper('A4', 'landscape'); 
+    $dompdf->loadHtml($html);
+    $dompdf->render();
+
+    // Returnăm PDF-ul ca răspuns
+    $response = new Response($dompdf->output());
+    $response->headers->set('Content-Type', 'application/pdf');
+    $response->headers->set('Content-Disposition', 'inline; filename="clients.pdf"');
+
+    return $response;
+}
+
+
 
 }
 
