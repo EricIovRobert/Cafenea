@@ -63,6 +63,9 @@ class Client
     #[ORM\Column(length: 50)]
     private ?string $Nume = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $Ciocolata = null;
+
     public function __construct()
     {
         $this->clientZiuas = new ArrayCollection();
@@ -267,6 +270,18 @@ class Client
     public function setNume(string $Nume): static
     {
         $this->Nume = $Nume;
+
+        return $this;
+    }
+
+    public function getCiocolata(): ?int
+    {
+        return $this->Ciocolata;
+    }
+
+    public function setCiocolata(?int $Ciocolata): static
+    {
+        $this->Ciocolata = $Ciocolata;
 
         return $this;
     }

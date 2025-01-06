@@ -101,6 +101,7 @@ class DataController extends AbstractController
                     'cafea_lavazza' => $client->getCafeaLavazza() ?? 0,
                     'zahar' => $client->getZahar() ?? 0,
                     'lapte' => $client->getLapte() ?? 0,
+                    'ciocolata' => $client->getCiocolata() ?? 0,
                     'ceai' => $client->getCeai() ?? 0,
                     'solubil' => $client->getSolubil() ?? 0,
                     'pahare_plastic' => $client->getPaharePlastic() ?? 0,
@@ -119,10 +120,115 @@ class DataController extends AbstractController
     }
 
     #[Route('/data/{id}/add-client', name: 'data_add_client')]
-public function addClient(int $id, Request $request, EntityManagerInterface $entityManager): Response
-{
+    public function addClient(int $id, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        // Găsim obiectul `Data` pentru ID-ul dat
+        $data = $entityManager->getRepository(Data::class)->find($id);
     
+        // Verificăm dacă data există
+        if (!$data) {
+            throw $this->createNotFoundException('Data nu a fost găsită!');
+        }
+    
+        // Creăm un nou client
+        $client = new \App\Entity\Client();
+        $clientZiua = new \App\Entity\ClientZiua();
+        $clientZiua->setData($data);
+        $clientZiua->setClient($client);
+    
+        // Obținem lista numelor clienților existenți
+        $clientNames = $entityManager->getRepository(\App\Entity\Client::class)
+            ->createQueryBuilder('c')
+            ->select('c.Nume')
+            ->distinct()
+            ->getQuery()
+            ->getResult();
+    
+        $clientNameChoices = array_map(function ($c) {
+            return $c['Nume'];
+        }, $clientNames);
+    
+        // Construim formularul
+        $form = $this->createFormBuilder($client)
+            ->add('Nume', \Symfony\Component\Form\Extension\Core\Type\TextType::class, [
+                'label' => 'Nume Client',
+                'attr' => [
+                    'class' => 'form-control combobox',
+                    'list' => 'client-names', // Asociază lista cu id-ul datalist
+                    'placeholder' => 'Selectează sau introdu manual',
+                ],
+                'required' => true,
+            ])
+            ->add('Citire_anterioara', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+                'label' => 'Citire Anterioară',
+                'attr' => ['class' => 'form-control'],
+                'required' => false,
+            ])
+            ->add('Citire_actuala', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+                'label' => 'Citire Actuală',
+                'attr' => ['class' => 'form-control'],
+                'required' => true,
+            ])
+            ->add('Probe', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+                'label' => 'Probe',
+                'attr' => ['class' => 'form-control'],
+                'required' => false,
+            ])
+            ->add('Pret', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
+                'label' => 'Preț',
+                'attr' => ['class' => 'form-control'],
+                'required' => false,
+            ])
+            ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, [
+                'label' => 'Adaugă Client',
+                'attr' => ['class' => 'btn btn-success mt-3'],
+            ])
+            ->getForm();
+    
+        $form->handleRequest($request);
+    
+        if ($form->isSubmitted() && $form->isValid()) {
+            $clientNume = $client->getNume();
+    
+            // Verificăm dacă numele există deja
+            $existingClient = $entityManager->getRepository(\App\Entity\Client::class)
+                ->findOneBy(['Nume' => $clientNume], ['id' => 'DESC']);
+    
+            if ($existingClient) {
+                // Autocompletăm `citire_anterioara` cu ultima `citire_actuala`
+                $client->setCitireAnterioara($existingClient->getCitireActuala());
+            }
+    
+            $entityManager->persist($client);
+            $entityManager->persist($clientZiua);
+            $entityManager->flush();
+    
+            $this->addFlash('success', 'Clientul a fost adăugat cu succes!');
+    
+            return $this->redirectToRoute('data_clients', ['id' => $id]);
+        }
+    
+        return $this->render('clients/add_client.html.twig', [
+            'form' => $form->createView(),
+            'date_formatted' => $data->getZiua()->format('d.m.Y'),
+            'clientNames' => $clientNameChoices, // Trimitem numele clienților către template
+        ]);
+    }
+    
+    
+
+        #[Route('/api/get-last-citire-actuala', name: 'get_last_citire_actuala')]
+public function getLastCitireActuala(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $clientName = $request->query->get('client');
+    $client = $entityManager->getRepository(\App\Entity\Client::class)
+        ->findOneBy(['Nume' => $clientName], ['id' => 'DESC']);
+
+    return $this->json([
+        'citire_actuala' => $client ? $client->getCitireActuala() : null,
+    ]);
 }
+
 
 }
 

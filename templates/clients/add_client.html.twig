@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Adaugă Client{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>Adaugă Client pentru data {{ date_formatted }}</h1>
+
+    <div class="mt-4">
+        {{ form_start(form) }}
+
+        <div class="form-group">
+            {{ form_label(form.Nume) }}
+            {{ form_widget(form.Nume, {'attr': {'list': 'client-names'}}) }}
+            <datalist id="client-names">
+                {% for name in clientNames %}
+                    <option value="{{ name }}"></option>
+                {% endfor %}
+            </datalist>
+        </div>
+
+        <div class="form-group">
+            {{ form_row(form.Citire_anterioara) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_row(form.Citire_actuala) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_row(form.Probe) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_row(form.Pret) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_row(form.save) }}
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const clientInput = document.querySelector('.combobox');
+        const citireAnterioaraInput = document.getElementById('form_Citire_anterioara');
+
+        clientInput.addEventListener('input', () => {
+            const clientName = clientInput.value;
+
+            // Verificăm dacă numele există în lista de clienți
+            fetch(`/api/get-last-citire-actuala?client=${clientName}`)
+                .then(response => response.json())
+                .then(data => {
+                    citireAnterioaraInput.value = data.citire_actuala || 0;
+                })
+                .catch(error => {
+                    console.error('Eroare la preluarea citirii anterioare:', error);
+                    citireAnterioaraInput.value = '';
+                });
+        });
+    });
+</script>
+{% endblock %}
