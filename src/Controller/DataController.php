@@ -201,52 +201,52 @@ public function add(Request $request, EntityManagerInterface $entityManager): Re
                 'attr' => ['class' => 'form-control'],
                 'required' => true,
             ])
-            ->add('CafeaCovim', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+            ->add('CafeaCovim', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Cafea Covim',
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
             ])
-            ->add('CafeaLavazza', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+            ->add('CafeaLavazza', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Cafea Lavazza',
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
             ])
-            ->add('Zahar', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+            ->add('Zahar', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Zahar',
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
             ])
-            ->add('Lapte', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+            ->add('Lapte', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Lapte',
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
             ])
-            ->add('Ciocolata', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+            ->add('Ciocolata', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Ciocolata',
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
             ])
-            ->add('Ceai', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+            ->add('Ceai', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Ceai',
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
             ])
-            ->add('Solubil', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+            ->add('Solubil', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Solubil',
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
             ])
-            ->add('Pahare_plastic', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+            ->add('Pahare_plastic', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Pahare Plastic',
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
             ])
-            ->add('Pahare_carton', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+            ->add('Pahare_carton', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Pahare Carton',
                 'attr' => ['class' => 'form-control'],
                 'required' => false,
             ])
-            ->add('Palete', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+            ->add('Palete', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Palete',
                 'attr' => ['class' => 'form-control'],
                 'required' => false,

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Clienti pentru data {{ date_formatted }}</title>
+    <p>Operator: ...................................</p>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -28,6 +29,12 @@
         h1 {
             text-align: center;
             margin-bottom: 20px;
+        }
+
+        .total-row {
+            font-weight: bold;
+            border-top: 3px solid #000;
+            background-color: #e6e6e6;
         }
     </style>
 </head>
@@ -57,6 +64,18 @@
             </tr>
         </thead>
         <tbody>
+            {% set total_total = 0 %}
+            {% set total_cafea_covim = 0 %}
+            {% set total_cafea_lavazza = 0 %}
+            {% set total_zahar = 0 %}
+            {% set total_lapte = 0 %}
+            {% set total_ciocolata = 0 %}
+            {% set total_ceai = 0 %}
+            {% set total_solubil = 0 %}
+            {% set total_pahare_plastic = 0 %}
+            {% set total_pahare_carton = 0 %}
+            {% set total_palete = 0 %}
+
             {% for client in clients %}
                 <tr>
                     <td>{{ loop.index }}</td>
@@ -78,7 +97,34 @@
                     <td>{{ client.pahare_carton }}</td>
                     <td>{{ client.palete }}</td>
                 </tr>
+
+                {% set total_total = total_total + client.total %}
+                {% set total_cafea_covim = total_cafea_covim + client.cafea_covim %}
+                {% set total_cafea_lavazza = total_cafea_lavazza + client.cafea_lavazza %}
+                {% set total_zahar = total_zahar + client.zahar %}
+                {% set total_lapte = total_lapte + client.lapte %}
+                {% set total_ciocolata = total_ciocolata + client.ciocolata %}
+                {% set total_ceai = total_ceai + client.ceai %}
+                {% set total_solubil = total_solubil + client.solubil %}
+                {% set total_pahare_plastic = total_pahare_plastic + client.pahare_plastic %}
+                {% set total_pahare_carton = total_pahare_carton + client.pahare_carton %}
+                {% set total_palete = total_palete + client.palete %}
             {% endfor %}
+
+            <tr class="total-row">
+                <td colspan="7">Total</td>
+                <td>{{ total_total }}</td>
+                <td>{{ total_cafea_covim }}</td>
+                <td>{{ total_cafea_lavazza }}</td>
+                <td>{{ total_zahar }}</td>
+                <td>{{ total_lapte }}</td>
+                <td>{{ total_ciocolata }}</td>
+                <td>{{ total_ceai }}</td>
+                <td>{{ total_solubil }}</td>
+                <td>{{ total_pahare_plastic }} <br> ({{total_pahare_plastic / 100.0}} seturi)</td>
+                <td>{{ total_pahare_carton }} <br> ({{total_pahare_carton / 50.0}} seturi)</td>
+                <td>{{ total_palete }}</td>
+            </tr>
         </tbody>
     </table>
 </body>

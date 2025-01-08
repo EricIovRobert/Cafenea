@@ -28,31 +28,31 @@ class Client
     private ?float $Pret = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $CafeaCovim = null;
+    private ?float $CafeaCovim = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $CafeaLavazza = null;
+    private ?float $CafeaLavazza = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $Zahar = null;
+    private ?float $Zahar = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $Lapte = null;
+    private ?float $Lapte = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $Ceai = null;
+    private ?float $Ceai = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $Solubil = null;
+    private ?float $Solubil = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $Pahare_plastic = null;
+    private ?float $Pahare_plastic = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $Pahare_carton = null;
+    private ?float $Pahare_carton = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $Palete = null;
+    private ?float $Palete = null;
 
     /**
      * @var Collection<int, ClientZiua>
@@ -64,7 +64,7 @@ class Client
     private ?string $Nume = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $Ciocolata = null;
+    private ?float $Ciocolata = null;
 
     public function __construct()
     {
@@ -124,108 +124,108 @@ class Client
         return $this;
     }
 
-    public function getCafeaCovim(): ?int
+    public function getCafeaCovim(): ?float
     {
         return $this->CafeaCovim;
     }
 
-    public function setCafeaCovim(?int $CafeaCovim): static
+    public function setCafeaCovim(?float $CafeaCovim): static
     {
         $this->CafeaCovim = $CafeaCovim;
 
         return $this;
     }
 
-    public function getCafeaLavazza(): ?int
+    public function getCafeaLavazza(): ?float
     {
         return $this->CafeaLavazza;
     }
 
-    public function setCafeaLavazza(?int $CafeaLavazza): static
+    public function setCafeaLavazza(?float $CafeaLavazza): static
     {
         $this->CafeaLavazza = $CafeaLavazza;
 
         return $this;
     }
 
-    public function getZahar(): ?int
+    public function getZahar(): ?float
     {
         return $this->Zahar;
     }
 
-    public function setZahar(?int $Zahar): static
+    public function setZahar(?float $Zahar): static
     {
         $this->Zahar = $Zahar;
 
         return $this;
     }
 
-    public function getLapte(): ?int
+    public function getLapte(): ?float
     {
         return $this->Lapte;
     }
 
-    public function setLapte(?int $Lapte): static
+    public function setLapte(?float $Lapte): static
     {
         $this->Lapte = $Lapte;
 
         return $this;
     }
 
-    public function getCeai(): ?int
+    public function getCeai(): ?float
     {
         return $this->Ceai;
     }
 
-    public function setCeai(?int $Ceai): static
+    public function setCeai(?float $Ceai): static
     {
         $this->Ceai = $Ceai;
 
         return $this;
     }
 
-    public function getSolubil(): ?int
+    public function getSolubil(): ?float
     {
         return $this->Solubil;
     }
 
-    public function setSolubil(?int $Solubil): static
+    public function setSolubil(?float $Solubil): static
     {
         $this->Solubil = $Solubil;
 
         return $this;
     }
 
-    public function getPaharePlastic(): ?int
+    public function getPaharePlastic(): ?float
     {
         return $this->Pahare_plastic;
     }
 
-    public function setPaharePlastic(?int $Pahare_plastic): static
+    public function setPaharePlastic(?float $Pahare_plastic): static
     {
         $this->Pahare_plastic = $Pahare_plastic;
 
         return $this;
     }
 
-    public function getPahareCarton(): ?int
+    public function getPahareCarton(): ?float
     {
         return $this->Pahare_carton;
     }
 
-    public function setPahareCarton(?int $Pahare_carton): static
+    public function setPahareCarton(?float $Pahare_carton): static
     {
         $this->Pahare_carton = $Pahare_carton;
 
         return $this;
     }
 
-    public function getPalete(): ?int
+    public function getPalete(): ?float
     {
         return $this->Palete;
     }
 
-    public function setPalete(?int $Palete): static
+    public function setPalete(?float $Palete): static
     {
         $this->Palete = $Palete;
 
@@ -274,12 +274,12 @@ class Client
         return $this;
     }
 
-    public function getCiocolata(): ?int
+    public function getCiocolata(): ?float
     {
         return $this->Ciocolata;
     }
 
-    public function setCiocolata(?int $Ciocolata): static
+    public function setCiocolata(?float $Ciocolata): static
     {
         $this->Ciocolata = $Ciocolata;
 
