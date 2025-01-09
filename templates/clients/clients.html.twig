@@ -14,7 +14,7 @@
         <table class="table table-bordered table-hover text-center">
             <thead class="table-dark">
                 <tr>
-                    <th>Nr.</th>
+                    <th>Nr. ap. fiscal</th>
                     <th>Nume Client</th>
                     <th>Citire Anterioară</th>
                     <th>Citire Actuală</th>
@@ -37,7 +37,7 @@
             <tbody>
                 {% for client in clients %}
                     <tr>
-                        <td>{{ loop.index }}</td>
+                        <td>{{ client.id }}</td>
                         <td>{{ client.nume }}</td>
                         <td>{{ client.citire_anterioara }}</td>
                         <td>{{ client.citire_actuala }}</td>

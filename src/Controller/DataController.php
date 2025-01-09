@@ -113,7 +113,7 @@ public function add(Request $request, EntityManagerInterface $entityManager): Re
             $client = $relation->getClient();
             if ($client) {
                 $clients[] = [
-                    'id' => $client->getId(),
+                    'id' => $client->getNrApFiscal(),
                     'nume' => $client->getNume(),
                     'citire_anterioara' => $client->getCitireAnterioara() ?? 0,
                     'citire_actuala' => $client->getCitireActuala() ?? 0,
@@ -159,28 +159,21 @@ public function add(Request $request, EntityManagerInterface $entityManager): Re
         $clientZiua->setClient($client);
     
         // Obținem lista numelor clienților existenți
-        $clientNames = $entityManager->getRepository(\App\Entity\Client::class)
-            ->createQueryBuilder('c')
-            ->select('c.Nume')
-            ->distinct()
-            ->getQuery()
-            ->getResult();
-    
-        $clientNameChoices = array_map(function ($c) {
-            return $c['Nume'];
-        }, $clientNames);
+        $locatii = $entityManager->getRepository(\App\Entity\Locatie::class)->findAll();
+        $locatieChoices = [];
+        foreach ($locatii as $locatie) {
+        $locatieChoices[$locatie->getNume()] = $locatie->getNume();
+        }
     
         // Construim formularul
         $form = $this->createFormBuilder($client)
-            ->add('Nume', \Symfony\Component\Form\Extension\Core\Type\TextType::class, [
-                'label' => 'Nume Client',
-                'attr' => [
-                    'class' => 'form-control combobox',
-                    'list' => 'client-names', // Asociază lista cu id-ul datalist
-                    'placeholder' => 'Selectează sau introdu manual',
-                ],
-                'required' => true,
-            ])
+        ->add('Nume', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
+            'label' => 'Locație',
+            'choices' => $locatieChoices,
+            'attr' => ['class' => 'form-control combobox'],
+            'placeholder' => 'Selectați locația',
+            'required' => true,
+        ])
             ->add('Citire_anterioara', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
                 'label' => 'Citire Anterioară',
                 'attr' => ['class' => 'form-control'],
@@ -260,9 +253,15 @@ public function add(Request $request, EntityManagerInterface $entityManager): Re
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
+          
             $clientNume = $client->getNume();
-    
-            // Verificăm dacă numele există deja
+       
+          
+            $locatie = $entityManager->getRepository(\App\Entity\Locatie::class)->findOneBy(['Nume' => $clientNume]);
+            if ($locatie) {
+                $client->setNrApFiscal($locatie->getNrAparat());
+            }
+            
             $existingClient = $entityManager->getRepository(\App\Entity\Client::class)
                 ->findOneBy(['Nume' => $clientNume], ['id' => 'DESC']);
     
@@ -283,23 +282,28 @@ public function add(Request $request, EntityManagerInterface $entityManager): Re
         return $this->render('clients/add_client.html.twig', [
             'form' => $form->createView(),
             'date_formatted' => $data->getZiua()->format('d.m.Y'),
-            'clientNames' => $clientNameChoices, // Trimitem numele clienților către template
+            'clientNames' => $locatieChoices, // Trimitem numele clienților către template
         ]);
     }
     
     
 
-        #[Route('/api/get-last-citire-actuala', name: 'get_last_citire_actuala')]
-public function getLastCitireActuala(Request $request, EntityManagerInterface $entityManager): Response
-{
-    $clientName = $request->query->get('client');
-    $client = $entityManager->getRepository(\App\Entity\Client::class)
-        ->findOneBy(['Nume' => $clientName], ['id' => 'DESC']);
-
-    return $this->json([
-        'citire_actuala' => $client ? $client->getCitireActuala() : null,
-    ]);
-}
+    #[Route('/api/get-last-citire-actuala', name: 'get_last_citire_actuala')]
+    public function getLastCitireActuala(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $clientName = $request->query->get('client');
+    
+        if (!$clientName) {
+            return $this->json(['citire_actuala' => null]);
+        }
+    
+        $client = $entityManager->getRepository(\App\Entity\Client::class)
+            ->findOneBy(['Nume' => $clientName], ['id' => 'DESC']);
+    
+        return $this->json([
+            'citire_actuala' => $client ? $client->getCitireActuala() : null,
+        ]);
+    }
 
 #[Route('/data/{id}/clients/pdf', name: 'data_clients_pdf')]
 public function clientsToPdf(int $id, EntityManagerInterface $entityManager): Response
@@ -320,6 +324,7 @@ public function clientsToPdf(int $id, EntityManagerInterface $entityManager): Re
         $client = $relation->getClient();
         if ($client) {
             $clients[] = [
+                'id' => $client->getNrApFiscal(),
                 'nume' => $client->getNume(),
                 'citire_anterioara' => $client->getCitireAnterioara() ?? 0,
                 'citire_actuala' => $client->getCitireActuala() ?? 0,

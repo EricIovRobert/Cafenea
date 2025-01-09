@@ -66,6 +66,9 @@ class Client
     #[ORM\Column(nullable: true)]
     private ?float $Ciocolata = null;
 
+    #[ORM\Column]
+    private ?int $Nr_ap_fiscal = null;
+
     public function __construct()
     {
         $this->clientZiuas = new ArrayCollection();
@@ -282,6 +285,18 @@ class Client
     public function setCiocolata(?float $Ciocolata): static
     {
         $this->Ciocolata = $Ciocolata;
+
+        return $this;
+    }
+
+    public function getNrApFiscal(): ?int
+    {
+        return $this->Nr_ap_fiscal;
+    }
+
+    public function setNrApFiscal(int $Nr_ap_fiscal): static
+    {
+        $this->Nr_ap_fiscal = $Nr_ap_fiscal;
 
         return $this;
     }

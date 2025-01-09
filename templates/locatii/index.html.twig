@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lista Locațiilor{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+ <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Lista Locațiilor</h1>
+    <a href="{{ path('locatii_add') }}" class="btn btn-primary mb-3">Adaugă Locație</a>
+</div>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+             
+                <th>Număr Aparat</th>
+                <th>Nume</th>
+                <th>Acțiuni</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for locatie in locatii %}
+                <tr>
+                
+                    <td>{{ locatie.NrAparat }}</td>
+                    <td>{{ locatie.Nume }}</td>
+                    <td>
+                        <a href="{{ path('locatii_edit', {id: locatie.id}) }}" class="btn btn-warning btn-sm">Editează</a>
+                        <form method="post" action="{{ path('locatii_delete', {id: locatie.id}) }}" style="display: inline;" onsubmit="return confirm('Ești sigur?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ locatie.id) }}">
+                            <button class="btn btn-danger btn-sm">Șterge</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">Nu există locații</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
