@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Istoric Stoc Depozit la {{ date_formatted }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Istoric Stoc Depozit la {{ date_formatted }}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Produs</th>
+                <th>Stoc </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produs in produse %}
+                <tr>
+                    <td>{{ produs.nume }}</td>
+                    <td>{{ produs.stoc_act }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

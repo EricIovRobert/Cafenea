@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Adaugă Operație pentru {{ produs.Nume }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>Adaugă Operație pentru {{ produs.Nume }}</h1>
+    <p>Stoc curent: <strong>{{ produs.Stoc }}</strong></p>
+    {{ form_start(form) }}
+        <div class="mb-3">
+            {{ form_label(form.Data, 'Data Operației') }}
+            {{ form_widget(form.Data, { 'attr': { 'class': 'form-control' } }) }}
+            {{ form_errors(form.Data) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.nr, 'Valoare Operație') }}
+            {{ form_widget(form.nr, { 'attr': { 'class': 'form-control' } }) }}
+            {{ form_errors(form.nr) }}
+        </div>
+        <button type="submit" class="btn btn-success mt-3">Salvează Operația</button>
+        <a href="{{ path('produse') }}" class="btn btn-secondary mt-3">Înapoi la Produse</a>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

@@ -245,7 +245,7 @@ public function add(Request $request, EntityManagerInterface $entityManager): Re
                 'required' => false,
             ])
             ->add('save', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, [
-                'label' => 'Adaugă Client',
+                'label' => 'Adaugă Evidență',
                 'attr' => ['class' => 'btn btn-success mt-3'],
             ])
             ->getForm();

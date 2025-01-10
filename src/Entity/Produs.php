@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ProdusRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProdusRepository::class)]
@@ -21,6 +23,17 @@ class Produs
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $Observatii = null;
+
+    /**
+     * @var Collection<int, Operatii>
+     */
+    #[ORM\ManyToMany(targetEntity: Operatii::class, mappedBy: 'prod')]
+    private Collection $operatiis;
+
+    public function __construct()
+    {
+        $this->operatiis = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -59,6 +72,33 @@ class Produs
     public function setObservatii(?string $Observatii): static
     {
         $this->Observatii = $Observatii;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Operatii>
+     */
+    public function getOperatiis(): Collection
+    {
+        return $this->operatiis;
+    }
+
+    public function addOperatii(Operatii $operatii): static
+    {
+        if (!$this->operatiis->contains($operatii)) {
+            $this->operatiis->add($operatii);
+            $operatii->addProd($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOperatii(Operatii $operatii): static
+    {
+        if ($this->operatiis->removeElement($operatii)) {
+            $operatii->removeProd($this);
+        }
 
         return $this;
     }

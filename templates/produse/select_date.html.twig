@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vezi istoric{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>Vezi istoric Stoc Depozit</h1>
+     {{ form_start(form, { 'attr': {'target': '_blank'} }) }}
+        <div class="mb-3">
+            {{ form_row(form.data) }}
+        </div>
+       <div class="d-flex justify-content-between align-items-center mt-3">
+        <button type="submit" class="btn btn-primary">Printează</button>
+    <a href="{{ path('produse') }}" class="btn btn-secondary">Înapoi la Produse</a>
+   
+</div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}

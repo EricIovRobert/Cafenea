@@ -7,11 +7,13 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Lista Produse</h1>
         <a href="{{ path('produse_add') }}" class="btn btn-primary mb-3">Adaugă Produs</a>
+       
+
     </div>
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>Nr.</th>
                 <th>Nume</th>
                 <th>Stoc</th>
                 <th>Observații</th>
@@ -21,13 +23,14 @@
         <tbody>
             {% for produs in produse %}
                 <tr>
-                    <td>{{ produs.id }}</td>
+                    <td>{{ loop.index }}</td>
                     <td>{{ produs.Nume }}</td>
                     <td>{{ produs.Stoc }}</td>
                     <td>{{ produs.Observatii }}</td>
                     <td>
-                        <a href="{{ path('produse_edit', {id: produs.id}) }}" class="btn btn-warning btn-sm">Editează</a>
-                        <form method="post" action="{{ path('produse_delete', {id: produs.id}) }}" style="display: inline;" onsubmit="return confirm('Ești sigur că vrei să ștergi acest produs?');">
+                        <a href="{{ path('produse_edit', { id: produs.id }) }}" class="btn btn-warning btn-sm">Editează</a>
+                        <a href="{{ path('produse_operatii', { id: produs.id }) }}" class="btn btn-primary btn-sm">Adaugă Operație</a>
+                        <form method="post" action="{{ path('produse_delete', { id: produs.id }) }}" style="display: inline;" onsubmit="return confirm('Ești sigur că vrei să ștergi acest produs?');">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produs.id) }}">
                             <button class="btn btn-danger btn-sm">Șterge</button>
                         </form>
@@ -40,5 +43,9 @@
             {% endfor %}
         </tbody>
     </table>
+      <div class="d-flex justify-content-between mt-3"> 
+        <a href="{{ path('produse_print') }}" class="btn btn-secondary" target="_blank">Printează</a>
+        <a href="{{ path('produse_pdf') }}" class="btn btn-secondary" >Vezi istoric</a>
+        </div>
 </div>
 {% endblock %}
