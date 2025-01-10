@@ -26,42 +26,55 @@ class ProdusController extends AbstractController
     }
 
     #[Route('/produse/add', name: 'produse_add')]
-    public function add(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $produs = new Produs();
+public function add(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $produs = new Produs();
 
-        $form = $this->createFormBuilder($produs)
-            ->add('Nume', TextType::class, [
-                'label' => 'Nume Produs',
-                'attr' => ['class' => 'form-control'],
-                'required' => true,
-            ])
-            ->add('Stoc', NumberType::class, [
-                'label' => 'Stoc',
-                'attr' => ['class' => 'form-control'],
-                'required' => true,
-            ])
-            ->add('Observatii', TextType::class, [
-                'label' => 'Observații',
-                'attr' => ['class' => 'form-control'],
-                'required' => false,
-            ])
-            ->getForm();
+    $form = $this->createFormBuilder($produs)
+        ->add('Nume', TextType::class, [
+            'label' => 'Nume Produs',
+            'attr' => ['class' => 'form-control'],
+            'required' => true,
+        ])
+        ->add('Stoc', NumberType::class, [
+            'label' => 'Stoc',
+            'attr' => ['class' => 'form-control'],
+            'required' => true,
+        ])
+        ->add('Observatii', TextType::class, [
+            'label' => 'Observații',
+            'attr' => ['class' => 'form-control'],
+            'required' => false,
+        ])
+        ->getForm();
 
-        $form->handleRequest($request);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($produs);
-            $entityManager->flush();
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Persistăm produsul în baza de date
+        $entityManager->persist($produs);
+        $entityManager->flush();
 
-            $this->addFlash('success', 'Produsul a fost adăugat cu succes!');
-            return $this->redirectToRoute('produse');
-        }
+        // Creăm o operație automată pentru produsul adăugat
+        $operatie = new Operatii();
+        $operatie->setData(new \DateTime()); // Data de azi
+        $operatie->setNr(0); // Valoare operație 0
+        $operatie->setStocAct($produs->getStoc()); // Stoc actual egal cu valoarea din formular
+        $operatie->addProd($produs); // Asociem produsul cu operația
 
-        return $this->render('produse/add.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        // Persistăm operația
+        $entityManager->persist($operatie);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Produsul și operația au fost adăugate cu succes!');
+        return $this->redirectToRoute('produse');
     }
+
+    return $this->render('produse/add.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
+
 
     #[Route('/produse/edit/{id}', name: 'produse_edit')]
     public function edit(int $id, Request $request, EntityManagerInterface $entityManager): Response
@@ -200,22 +213,24 @@ public function produseToPdf(Request $request, EntityManagerInterface $entityMan
         // Pregătim lista de produse și stocurile lor
         $dataProduse = [];
         foreach ($produse as $produs) {
-            // Găsim operațiile pentru produs și data selectată
+            // Găsim ultima operație înainte sau la data selectată
             $operatii = $entityManager->getRepository(Operatii::class)
                 ->createQueryBuilder('o')
-                ->andWhere('o.Data = :data')
                 ->andWhere(':produs MEMBER OF o.prod')
+                ->andWhere('o.Data <= :data') // Operații până la data selectată
                 ->setParameter('data', $selectedDate)
                 ->setParameter('produs', $produs)
+                ->orderBy('o.Data', 'DESC') // Cele mai recente operații primele
+                ->setMaxResults(1) // Doar una
                 ->getQuery()
                 ->getResult();
         
             // Verificăm dacă există operații
             if (!empty($operatii)) {
-                // Preluăm ultima valoare a `stoc_act`
-                $stocAct = end($operatii)->getStocAct();
+                // Preluăm ultima valoare a `stoc_act` din operație
+                $stocAct = $operatii[0]->getStocAct();
             } else {
-                // Dacă nu există operații, folosim valoarea stocului produsului
+                // Dacă nu există operații, folosim stocul produsului
                 $stocAct = $produs->getStoc();
             }
         
@@ -224,6 +239,7 @@ public function produseToPdf(Request $request, EntityManagerInterface $entityMan
                 'stoc_act' => $stocAct,
             ];
         }
+        
         
 
         // Traducerea zilelor săptămânii
