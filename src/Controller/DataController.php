@@ -73,10 +73,14 @@ public function add(Request $request, EntityManagerInterface $entityManager): Re
         $existingDate = $entityManager->getRepository(Data::class)
             ->findOneBy(['Ziua' => $data->getZiua()]);
 
-        if ($existingDate) {
-            // Adăugăm un mesaj de eroare la formular
-            $this->addFlash('danger', 'Data selectată există deja! Vă rugăm să selectați o altă dată.');
-        } else {
+            if ($existingDate) {
+                // Generăm un script care afișează alerta și reîncarcă pagina
+                return new Response('<script>
+                    alert("Data selectată există deja! Vă rugăm să selectați o altă dată.");
+                    history.back(-1);
+                </script>');
+            }
+            else {
             $entityManager->persist($data);
             $entityManager->flush();
 
