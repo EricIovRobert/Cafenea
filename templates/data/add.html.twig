@@ -6,14 +6,7 @@
 <div class="container mt-5">
     <h1 class="mb-4">Adaugă o nouă dată</h1>
 
-    {# Afișăm mesajele flash, dacă există #}
-    {% for label, messages in app.flashes %}
-        <div class="alert alert-{{ label }} mt-3">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-        </div>
-    {% endfor %}
+   
 
     {{ form_start(form) }}
         {{ form_widget(form) }}

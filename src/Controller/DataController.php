@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use App\Entity\ClientZiua;
 
 class DataController extends AbstractController
 {
@@ -92,54 +93,72 @@ public function add(Request $request, EntityManagerInterface $entityManager): Re
 
 
 
+#[Route('/data/{id}/clients', name: 'data_clients')]
+public function clientsForDate(int $id, EntityManagerInterface $entityManager): Response
+{
+    // Găsim obiectul `Data` pentru ID-ul dat
+    $data = $entityManager->getRepository(Data::class)->find($id);
 
-    #[Route('/data/{id}/clients', name: 'data_clients')]
-    public function clientsForDate(int $id, EntityManagerInterface $entityManager): Response
-    {
-        // Găsim obiectul `Data` pentru ID-ul dat
-        $data = $entityManager->getRepository(Data::class)->find($id);
+    if (!$data) {
+        throw $this->createNotFoundException('Data nu a fost găsită!');
+    }
 
-        // Verificăm dacă data există
-        if (!$data) {
-            throw $this->createNotFoundException('Data nu a fost găsită!');
-        }
+    // Obținem toate relațiile `ClientZiua` pentru această dată
+    $relations = $data->getClientZiuas();
 
-        // Obținem toate relațiile `ClientZiua` pentru această dată
-        $relations = $data->getClientZiuas();
+    // Pregătim lista clienților
+    $clients = [];
+    $lastClientIds = [];
 
-        // Pregătim lista clienților
-        $clients = [];
-        foreach ($relations as $relation) {
-            $client = $relation->getClient();
-            if ($client) {
-                $clients[] = [
-                    'id' => $client->getNrApFiscal(),
-                    'nume' => $client->getNume(),
-                    'citire_anterioara' => $client->getCitireAnterioara() ?? 0,
-                    'citire_actuala' => $client->getCitireActuala() ?? 0,
-                    'probe' => $client->getProbe() ?? 0,
-                    'pret' => $client->getPret() ?? 0,
-                    'cafea_covim' => $client->getCafeaCovim() ?? 0,
-                    'cafea_lavazza' => $client->getCafeaLavazza() ?? 0,
-                    'zahar' => $client->getZahar() ?? 0,
-                    'lapte' => $client->getLapte() ?? 0,
-                    'ciocolata' => $client->getCiocolata() ?? 0,
-                    'ceai' => $client->getCeai() ?? 0,
-                    'solubil' => $client->getSolubil() ?? 0,
-                    'pahare_plastic' => $client->getPaharePlastic() ?? 0,
-                    'pahare_carton' => $client->getPahareCarton() ?? 0,
-                    'palete' => $client->getPalete() ?? 0,
-                ];
+    foreach ($relations as $relation) {
+        $client = $relation->getClient();
+
+        if ($client) {
+            $clients[] = [
+                'id' => $client->getId(),
+                'idF' => $client->getNrApFiscal(),
+                'nume' => $client->getNume(),
+                'citire_anterioara' => $client->getCitireAnterioara() ?? 0,
+                'citire_actuala' => $client->getCitireActuala() ?? 0,
+                'probe' => $client->getProbe() ?? 0,
+                'pret' => $client->getPret() ?? 0,
+                'cafea_covim' => $client->getCafeaCovim() ?? 0,
+                'cafea_lavazza' => $client->getCafeaLavazza() ?? 0,
+                'zahar' => $client->getZahar() ?? 0,
+                'lapte' => $client->getLapte() ?? 0,
+                'ciocolata' => $client->getCiocolata() ?? 0,
+                'ceai' => $client->getCeai() ?? 0,
+                'solubil' => $client->getSolubil() ?? 0,
+                'pahare_plastic' => $client->getPaharePlastic() ?? 0,
+                'pahare_carton' => $client->getPahareCarton() ?? 0,
+                'palete' => $client->getPalete() ?? 0,
+            ];
+
+          
+            $lastClient = $entityManager->getRepository(ClientZiua::class)
+                ->createQueryBuilder('cz')
+                ->join('cz.client', 'c')
+                ->where('c.Nr_ap_fiscal = :nrApFiscal')
+                ->setParameter('nrApFiscal', $client->getNrApFiscal())
+                ->orderBy('cz.id', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+
+            if ($lastClient) {
+                $lastClientIds[$client->getNrApFiscal()] = $lastClient->getClient()->getId();
             }
         }
-
-        // Renderizăm template-ul
-        return $this->render('clients/clients.html.twig', [
-            'clients' => $clients,
-            'date_id' => $id,
-            'date_formatted' => $data->getZiua()->format('d.m.Y'),
-        ]);
     }
+
+    return $this->render('clients/clients.html.twig', [
+        'clients' => $clients,
+        'date_id' => $id,
+        'date_formatted' => $data->getZiua()->format('d.m.Y'),
+        'last_client_ids' => $lastClientIds, 
+    ]);
+}
+
 
     #[Route('/data/{id}/add-client', name: 'data_add_client')]
     public function addClient(int $id, Request $request, EntityManagerInterface $entityManager): Response
@@ -382,6 +401,44 @@ public function clientsToPdf(int $id, EntityManagerInterface $entityManager): Re
     $response->headers->set('Content-Disposition', 'inline; filename="clients.pdf"');
 
     return $response;
+}
+
+#[Route('/data/{dateId}/delete-client/{clientId}', name: 'data_delete_client', methods: ['POST'])]
+public function deleteClient(int $dateId, int $clientId, EntityManagerInterface $entityManager): Response
+{
+    $clientZiua = $entityManager->getRepository(\App\Entity\ClientZiua::class)
+        ->findOneBy(['client' => $clientId, 'data' => $dateId]);
+
+    if (!$clientZiua) {
+        throw $this->createNotFoundException('Legătura clientului cu data nu a fost găsită!');
+    }
+
+    $client = $clientZiua->getClient();
+    $nrApFiscal = $client->getNrApFiscal();
+
+    // Găsim ultima apariție a `Nr_ap_fiscal`
+    $lastClientZiuaForFiscal = $entityManager->getRepository(\App\Entity\ClientZiua::class)
+        ->createQueryBuilder('cz')
+        ->join('cz.client', 'c')
+        ->where('c.Nr_ap_fiscal = :nrApFiscal')
+        ->setParameter('nrApFiscal', $nrApFiscal)
+        ->orderBy('cz.id', 'DESC')
+        ->setMaxResults(1)
+        ->getQuery()
+        ->getOneOrNullResult();
+
+    if (!$lastClientZiuaForFiscal || $lastClientZiuaForFiscal->getId() !== $clientZiua->getId()) {
+        $this->addFlash('error', 'Nu puteți șterge această înregistrare, deoarece există alte operații mai recente pentru acest număr de aparat fiscal.');
+        return $this->redirectToRoute('data_clients', ['id' => $dateId]);
+    }
+
+    // Ștergem legătura și clientul
+    $entityManager->remove($clientZiua);
+    $entityManager->remove($client);
+    $entityManager->flush();
+
+    $this->addFlash('success', 'Clientul și legătura au fost șterse cu succes!');
+    return $this->redirectToRoute('data_clients', ['id' => $dateId]);
 }
 
 

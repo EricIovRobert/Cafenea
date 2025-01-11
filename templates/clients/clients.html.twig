@@ -32,12 +32,13 @@
                     <th>Pahare Plastic</th>
                     <th>Pahare Carton</th>
                     <th>Palete</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for client in clients %}
                     <tr>
-                        <td>{{ client.id }}</td>
+                        <td>{{ client.idF }}</td>
                         <td>{{ client.nume }}</td>
                         <td>{{ client.citire_anterioara }}</td>
                         <td>{{ client.citire_actuala }}</td>
@@ -55,6 +56,14 @@
                         <td>{{ client.pahare_plastic }}</td>
                         <td>{{ client.pahare_carton }}</td>
                         <td>{{ client.palete }}</td>
+                        <td>
+                {% if last_client_ids[client.idF] == client.id %}
+                    <form method="post" action="{{ path('data_delete_client', { dateId: date_id, clientId: client.id }) }}" onsubmit="return confirm('Ești sigur că vrei să ștergi acest client?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ client.id) }}">
+                        <button class="btn btn-danger btn-sm">Șterge</button>
+                    </form>
+                {% endif %}
+            </td>
                     </tr>
                 {% else %}
                     <tr>
