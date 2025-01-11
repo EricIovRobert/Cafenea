@@ -37,11 +37,24 @@ security:
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/locatii$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/locatii/add$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/locatii/edit/\d+$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/locatii/delete/\d+$, roles: IS_AUTHENTICATED_FULLY }
+        
+        - { path: ^/produse$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/produse/add$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/produse/edit/\d+$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/produse/delete/\d+$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/produse/operatii/\d+$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/produse/pdf$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/produse/print$, roles: IS_AUTHENTICATED_FULLY }
+
+        - { path: ^/api/get-last-citire-actuala$, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/data$, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/data/add$, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/data/\d+/clients$, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/data/\d+/add-client$, roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/api/get-last-citire-actuala$, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/data/\d+/clients/pdf$, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
