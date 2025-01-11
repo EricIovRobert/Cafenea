@@ -191,97 +191,115 @@ public function add(Request $request, EntityManagerInterface $entityManager): Re
         ]);
     }
     #[Route('/produse/pdf', name: 'produse_pdf')]
-public function produseToPdf(Request $request, EntityManagerInterface $entityManager): Response
-{
-    // Formular pentru selectarea datei
-    $form = $this->createFormBuilder()
-        ->add('data', DateType::class, [
-            'widget' => 'single_text',
-            'label' => 'Selectează data',
-            'attr' => ['class' => 'form-control'],
-        ])
-        ->getForm();
-
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        $selectedDate = $form->get('data')->getData();
-
-        // Obține toate produsele
-        $produse = $entityManager->getRepository(Produs::class)->findAll();
-
-        // Pregătim lista de produse și stocurile lor
-        $dataProduse = [];
-        foreach ($produse as $produs) {
-            // Găsim ultima operație înainte sau la data selectată
-            $operatii = $entityManager->getRepository(Operatii::class)
-                ->createQueryBuilder('o')
-                ->andWhere(':produs MEMBER OF o.prod')
-                ->andWhere('o.Data <= :data') // Operații până la data selectată
-                ->setParameter('data', $selectedDate)
-                ->setParameter('produs', $produs)
-                ->orderBy('o.Data', 'DESC') // Cele mai recente operații primele
-                ->setMaxResults(1) // Doar una
-                ->getQuery()
-                ->getResult();
-        
-            // Verificăm dacă există operații
-            if (!empty($operatii)) {
-                // Preluăm ultima valoare a `stoc_act` din operație
-                $stocAct = $operatii[0]->getStocAct();
-            } else {
-                // Dacă nu există operații, folosim stocul produsului
-                $stocAct = $produs->getStoc();
+    public function produseToPdf(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        // Formular pentru selectarea datei
+        $form = $this->createFormBuilder()
+            ->add('data', DateType::class, [
+                'widget' => 'single_text',
+                'label' => 'Selectează data',
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->getForm();
+    
+        $form->handleRequest($request);
+    
+        if ($form->isSubmitted() && $form->isValid()) {
+            $selectedDate = $form->get('data')->getData();
+    
+            // Obține toate produsele
+            $produse = $entityManager->getRepository(Produs::class)->findAll();
+    
+            // Pregătim lista de produse și stocurile lor
+            $dataProduse = [];
+            foreach ($produse as $produs) {
+                $produsId = $produs->getId();
+    
+                // Găsim ultima operație pentru produs în funcție de data selectată
+                $operatieProdus = $entityManager->getConnection()->createQueryBuilder()
+                    ->select('op.*')
+                    ->from('operatii', 'op')
+                    ->innerJoin('op', 'operatii_produs', 'op_prod', 'op.id = op_prod.operatii_id')
+                    ->where('op_prod.produs_id = :produsId')
+                    ->andWhere('op.data <= :data')
+                    ->setParameter('produsId', $produsId)
+                    ->setParameter('data', $selectedDate->format('Y-m-d'))
+                    ->orderBy('op.data', 'DESC')
+                    ->addOrderBy('op.id', 'DESC')
+                    ->setMaxResults(1)
+                    ->execute()
+                    ->fetchAssociative();
+    
+                // Găsim prima operație pentru produs
+                $primaOperatieProdus = $entityManager->getConnection()->createQueryBuilder()
+                    ->select('op.data')
+                    ->from('operatii', 'op')
+                    ->innerJoin('op', 'operatii_produs', 'op_prod', 'op.id = op_prod.operatii_id')
+                    ->where('op_prod.produs_id = :produsId')
+                    ->setParameter('produsId', $produsId)
+                    ->orderBy('op.data', 'ASC')
+                    ->setMaxResults(1)
+                    ->execute()
+                    ->fetchOne();
+    
+                if ($primaOperatieProdus && $selectedDate->format('Y-m-d') < $primaOperatieProdus) {
+                    // Dacă data selectată este mai devreme decât prima operație
+                    $stocAct = 'Nu exista istoric la data selectata';
+                } elseif ($operatieProdus) {
+                    // Dacă găsim o operație validă până la data selectată
+                    $stocAct = $operatieProdus['stoc_act'];
+                } else {
+                    // Dacă nu există operații până la data selectată
+                    $stocAct = 'Nu exista istoric la data selectata';
+                }
+    
+                $dataProduse[] = [
+                    'nume' => $produs->getNume(),
+                    'stoc_act' => $stocAct,
+                ];
             }
-        
-            $dataProduse[] = [
-                'nume' => $produs->getNume(),
-                'stoc_act' => $stocAct,
+    
+            // Traducerea zilelor săptămânii
+            $zileTraduse = [
+                'Monday'    => 'Luni',
+                'Tuesday'   => 'Marti',
+                'Wednesday' => 'Miercuri',
+                'Thursday'  => 'Joi',
+                'Friday'    => 'Vineri',
+                'Saturday'  => 'Sambata',
+                'Sunday'    => 'Duminica',
             ];
+    
+            $englishDay = $selectedDate->format('l');
+            $translatedDay = $zileTraduse[$englishDay] ?? $englishDay;
+    
+            $dateFormatted = $selectedDate->format('d.m.Y') . ' (' . $translatedDay . ')';
+    
+            // Creează conținutul HTML pentru PDF
+            $html = $this->renderView('produse/pdf.html.twig', [
+                'produse' => $dataProduse,
+                'date_formatted' => $dateFormatted,
+            ]);
+    
+            // Configurează DomPDF
+            $dompdf = new \Dompdf\Dompdf();
+            $dompdf->setPaper('A4', 'landscape');
+            $dompdf->loadHtml($html);
+            $dompdf->render();
+    
+            // Returnăm PDF-ul ca răspuns
+            return new Response($dompdf->output(), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="produse.pdf"',
+            ]);
         }
-        
-        
-
-        // Traducerea zilelor săptămânii
-        $zileTraduse = [
-            'Monday'    => 'Luni',
-            'Tuesday'   => 'Marți',
-            'Wednesday' => 'Miercuri',
-            'Thursday'  => 'Joi',
-            'Friday'    => 'Vineri',
-            'Saturday'  => 'Sâmbătă',
-            'Sunday'    => 'Duminică',
-        ];
-
-        $englishDay = $selectedDate->format('l'); // Ex: "Monday"
-        $translatedDay = $zileTraduse[$englishDay] ?? $englishDay;
-
-        // Formatează data cu ziua săptămânii
-        $dateFormatted = $selectedDate->format('d.m.Y') . ' (' . $translatedDay . ')';
-
-        // Creează conținutul HTML pentru PDF
-        $html = $this->renderView('produse/pdf.html.twig', [
-            'produse' => $dataProduse,
-            'date_formatted' => $dateFormatted,
-        ]);
-
-        // Configurează DomPDF
-        $dompdf = new \Dompdf\Dompdf();
-        $dompdf->setPaper('A4', 'landscape');
-        $dompdf->loadHtml($html);
-        $dompdf->render();
-
-        // Returnăm PDF-ul ca răspuns
-        return new Response($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="produse.pdf"',
+    
+        return $this->render('produse/select_date.html.twig', [
+            'form' => $form->createView(),
         ]);
     }
-
-    return $this->render('produse/select_date.html.twig', [
-        'form' => $form->createView(),
-    ]);
-}
+    
+    
 #[Route('/produse/print', name: 'produse_print')]
 public function printProduse(EntityManagerInterface $entityManager): Response
 {
@@ -292,12 +310,12 @@ public function printProduse(EntityManagerInterface $entityManager): Response
     $now = new \DateTime();
     $zileTraduse = [
         'Monday'    => 'Luni',
-        'Tuesday'   => 'Marți',
+        'Tuesday'   => 'Marti',
         'Wednesday' => 'Miercuri',
         'Thursday'  => 'Joi',
         'Friday'    => 'Vineri',
-        'Saturday'  => 'Sâmbătă',
-        'Sunday'    => 'Duminică',
+        'Saturday'  => 'Sambata',
+        'Sunday'    => 'Duminica',
     ];
     $currentDay = $zileTraduse[$now->format('l')] ?? $now->format('l');
 
