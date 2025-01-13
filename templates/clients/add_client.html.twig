@@ -91,9 +91,8 @@
 
         clientInput.addEventListener('input', () => {
             const clientName = clientInput.value;
-
-            // Verificăm dacă numele există în lista de clienți
-            fetch(`/api/get-last-citire-actuala?client=${clientName}`)
+            const apiUrl = "{{ path('get_last_citire_actuala') }}";
+            fetch(`${apiUrl}?client=${clientName}`)
                 .then(response => response.json())
                 .then(data => {
                     citireAnterioaraInput.value = data.citire_actuala || 0;

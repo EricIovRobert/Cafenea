@@ -144,21 +144,38 @@ public function add(Request $request, EntityManagerInterface $entityManager): Re
             throw $this->createNotFoundException('Produsul nu a fost găsit!');
         }
     
+        // Găsește prima operație pentru produs
+        $primaOperatie = $entityManager->getRepository(Operatii::class)
+            ->createQueryBuilder('o')
+            ->join('o.prod', 'p')
+            ->where('p.id = :produsId')
+            ->setParameter('produsId', $produs->getId())
+            ->orderBy('o.Data', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    
+        // Data minimă permisă
+        $dataMinima = $primaOperatie ? $primaOperatie->getData() : null;
+    
         // Creează o nouă operație
         $operatie = new Operatii();
     
-        $form = $this->createFormBuilder($operatie)
+        $formBuilder = $this->createFormBuilder($operatie)
             ->add('Data', DateType::class, [
                 'widget' => 'single_text',
                 'label' => 'Data operației',
-                'attr' => ['class' => 'form-control'],
+                'attr' => [
+                    'class' => 'form-control',
+                    'min' => $dataMinima ? $dataMinima->format('Y-m-d') : null, // Setăm data minimă permisă
+                ],
             ])
             ->add('nr', NumberType::class, [
                 'label' => 'Valoare operație (pozitiv pentru adăugare, negativ pentru scădere)',
                 'attr' => ['class' => 'form-control'],
-            ])
-            ->getForm();
+            ]);
     
+        $form = $formBuilder->getForm();
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
@@ -188,8 +205,10 @@ public function add(Request $request, EntityManagerInterface $entityManager): Re
         return $this->render('produse/operatii.html.twig', [
             'form' => $form->createView(),
             'produs' => $produs,
+            'data_minima' => $dataMinima ? $dataMinima->format('d.m.Y') : 'N/A', // Afișăm data minimă în template pentru utilizator
         ]);
     }
+    
     #[Route('/produse/pdf', name: 'produse_pdf')]
     public function produseToPdf(Request $request, EntityManagerInterface $entityManager): Response
     {

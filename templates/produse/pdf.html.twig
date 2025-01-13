@@ -36,6 +36,7 @@
     <table>
         <thead>
             <tr>
+                <th>Nr.</th>
                 <th>Produs</th>
                 <th>Stoc</th>
             </tr>
@@ -43,6 +44,7 @@
         <tbody>
             {% for produs in produse %}
                 <tr>
+                    <td>{{ loop.index }}</td>
                     <td>{{ produs.nume }}</td>
                     <td>{{ produs.stoc_act }}</td>
                 </tr>
