@@ -17,4 +17,4 @@ Acest proiect este o aplicație destinată gestionării aparatelor de cafea și 
   Prezintă datele sub formă de tabele detaliate pentru o analiza a stocurilor.
 
 - **URL (protejat prin autentificare)**
--  [Aici](https://cosmin.echelon-it.ro/public/index.php)
+  [Aici](https://cosmin.echelon-it.ro/public/index.php)
